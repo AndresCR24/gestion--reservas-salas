@@ -1,6 +1,8 @@
 from lista_enlazada import LinkedList
 from Sala import Sala
 
+import csv
+
 class Operaciones:
     def __init__(self):
         self.lista_salas = LinkedList()
@@ -20,6 +22,7 @@ class Operaciones:
                 return
         print(f"Sala {sala_id} no encontrada.")
     """
+
     def reservar(self, sala_id, horas=1):
         for sala in self.lista_salas:
             if sala.value.id == sala_id:
@@ -31,12 +34,33 @@ class Operaciones:
                 print(f"Sala {sala_id} reservada por {horas} horas. Tarifa: {tarifa}")
                 return
         print(f"Sala {sala_id} no encontrada.")
-
+    """
+    # Se trato de corregir que se restara el dinero si se cancelaba la reserva
+    def reservar(self, sala_id, horas):
+        for sala in self.lista_salas:
+            if sala.value.id == sala_id:
+                if sala.value.estado == "Disponible":
+                    sala.value.reservar(horas)
+                    print(f"Sala {sala_id} reservada por {horas} horas.")
+                    return
+                else:
+                    print(f"La sala {sala_id} no está disponible.")
+                    return
+        print(f"Sala {sala_id} no encontrada.")
+    """
     def liberar(self, sala_id):
         for sala in self.lista_salas:
             if sala.value.id == sala_id:
                 sala.value.liberar()
                 print(f"Sala {sala_id} liberada.")
+                return
+        print(f"Sala {sala_id} no encontrada.")
+
+    def mantenimiento(self, sala_id):
+        for sala in self.lista_salas:
+            if sala.value.id == sala_id:
+                sala.value.mantenimento()
+                print(f"Sala {sala_id} en mantenimiento.")
                 return
         print(f"Sala {sala_id} no encontrada.")
 
@@ -80,29 +104,39 @@ class Operaciones:
             if sala.value.estado == "Reservada":
                 print(sala.value)
 
-    def reservar_por_tipo(self, tipo_sala):
+    def reservar_por_tipo(self, tipo_sala, horas=1):
         for sala in self.lista_salas:
             if sala.value.tipo_sala == tipo_sala and sala.value.estado == "Disponible":
                 sala.value.reservar()
-                print(f"Sala {sala.value.id} de tipo {tipo_sala} reservada.")
+                tarifa = sala.value.tarifa_por_hora * horas
+                if horas > 8:
+                    tarifa *= 0.85  # Aplicar 15% de descuento
+                self.ingresos_totales += tarifa
+                print(f"Sala {sala.value.id} de tipo {tipo_sala} reservada por {horas} horas. Tarifa: {tarifa}")
                 return
         print(f"No hay salas disponibles de tipo {tipo_sala}.")
 
-    def modificar_reserva(self, sala_id, nuevo_tipo_sala=None):
+    def modificar_reserva(self, sala_id, nuevo_tipo_sala=None, horas=1):
         for sala in self.lista_salas:
             if sala.value.id == sala_id:
                 if nuevo_tipo_sala:
                     self.liberar(sala_id)
-                    self.reservar_por_tipo(nuevo_tipo_sala)
+                    self.reservar_por_tipo(nuevo_tipo_sala, horas)
                 else:
                     print(f"No se especificó un nuevo tipo de sala para la reserva {sala_id}.")
                 return
         print(f"Sala {sala_id} no encontrada.")
 
+
     def cancelar_reserva(self, sala_id):
         for sala in self.lista_salas:
             if sala.value.id == sala_id:
                 sala.value.liberar()
+                #sala.value.reservar()
+                #tarifa = sala.value.tarifa_por_hora * horas
+                #if horas > 8:
+                #    tarifa *= 0.85  # Aplicar 15% de descuento
+                #self.ingresos_totales -= tarifa
                 print(f"Reserva de la sala {sala_id} cancelada.")
                 return
         print(f"Sala {sala_id} no encontrada.")
@@ -110,3 +144,130 @@ class Operaciones:
     def calcular_ingresos(self):
         print(f"Ingresos totales por reservas: {self.ingresos_totales}")
         return self.ingresos_totales
+
+
+    """
+    def intercambiar_salas_mantenimiento(self, sala_id):
+        sala_mantenimiento = None
+        for sala in self.lista_salas:
+            if sala.value.id == sala_id and sala.value.estado == "Mantenimiento":
+                sala_mantenimiento = sala
+                break
+
+        if not sala_mantenimiento:
+            print(f"Sala {sala_id} no está en mantenimiento o no existe.")
+            return
+
+        for sala in self.lista_salas:
+            if (sala.value.capacidad_maxima == sala_mantenimiento.value.capacidad_maxima and
+                    sala.value.tipo_sala == sala_mantenimiento.value.tipo_sala and
+                    sala.value.estado != "Mantenimiento"):
+                # Intercambiar los nodos
+                sala_mantenimiento.value, sala.value = sala.value, sala_mantenimiento.value
+                print(f"Sala {sala_id} intercambiada con sala {sala.value.id}.")
+                return
+
+    """
+
+    def intercambiar_salas_mantenimiento(self, sala_id):
+        # Encontrar la sala en mantenimiento
+        nodo_anterior_mantenimiento = None
+        nodo_mantenimiento = None
+
+        anterior = None
+        for sala in self.lista_salas:
+            if sala.value.id == sala_id and sala.value.estado == "Mantenimiento":
+                nodo_anterior_mantenimiento = anterior
+                nodo_mantenimiento = sala
+                break
+            anterior = sala
+
+        if not nodo_mantenimiento:
+            print(f"Sala {sala_id} no está en mantenimiento o no existe.")
+            return
+
+        # Buscar una sala con las mismas características para intercambiar
+        nodo_anterior_candidato = None
+        nodo_candidato = None
+        anterior = None
+        for sala in self.lista_salas:
+            if (sala.value.capacidad_maxima == nodo_mantenimiento.value.capacidad_maxima and
+                    sala.value.tipo_sala == nodo_mantenimiento.value.tipo_sala and
+                    sala.value.estado != "Mantenimiento"):
+                nodo_anterior_candidato = anterior
+                nodo_candidato = sala
+                break
+            anterior = sala
+
+        if not nodo_candidato:
+            print("No se encontró una sala con las mismas características para intercambiar.")
+            return
+
+        # Intercambiar los nodos en la lista enlazada
+        if nodo_anterior_mantenimiento:
+            nodo_anterior_mantenimiento.next = nodo_candidato
+        else:
+            self.lista_salas.head = nodo_candidato  # Si es la primera sala en la lista
+
+        if nodo_anterior_candidato:
+            nodo_anterior_candidato.next = nodo_mantenimiento
+        else:
+            self.lista_salas.head = nodo_mantenimiento  # Si es la primera sala en la lista
+
+        # Intercambiar las referencias next
+        nodo_mantenimiento.next, nodo_candidato.next = nodo_candidato.next, nodo_mantenimiento.next
+
+        print(f"Sala {nodo_mantenimiento.value.id} intercambiada con sala {nodo_candidato.value.id}.")
+
+    """
+    def reorganizar_salas_por_capacidad(self):
+        if self.lista_salas.length < 2:
+            print("No hay suficientes salas para reorganizar.")
+            return
+
+        # Convertir la lista enlazada a una lista de Python para facilitar la ordenación
+        salas = []
+        for sala in self.lista_salas:
+            salas.append(sala.value)
+
+        # Ordenar las salas por capacidad máxima de mayor a menor
+        salas.sort(key=lambda x: x.capacidad_maxima, reverse=True)
+
+        # Reconstruir la lista enlazada con las salas ordenadas
+        self.lista_salas.delete()
+        for sala in salas:
+            self.lista_salas.append(sala)
+
+        print("Salas reorganizadas por capacidad máxima.") 
+    """
+    def reorganizar_salas_por_capacidad(self):
+        if self.lista_salas.length < 2:
+            print("No hay suficientes salas para reorganizar.")
+            return
+
+        for i in range(self.lista_salas.length - 1):
+            current = self.lista_salas.head
+            next_node = current.next
+            for j in range(self.lista_salas.length - 1 - i):
+                if current.value.capacidad_maxima < next_node.value.capacidad_maxima:
+                    current.value, next_node.value = next_node.value, current.value
+                current = next_node
+                next_node = next_node.next
+
+        print("Salas reorganizadas por capacidad máxima.")
+
+    def listar_salas_reservadas_por_tipo(self, tipo_sala):
+        print(f"Salas reservadas de tipo {tipo_sala}:")
+        for sala in self.lista_salas:
+            if sala.value.tipo_sala == tipo_sala and sala.value.estado == "Reservada":
+                print(sala.value)
+
+    # DE chat GPT
+    def cargar_salas_desde_csv(self, archivo_csv):
+        with open(archivo_csv, mode='r') as file:
+            reader = csv.reader(file)
+            for fila in reader:
+                nombre_sala = fila[0]
+                tipo_sala = fila[1]
+                self.agregar_sala(nombre_sala, tipo_sala)
+        print("Salas cargadas desde el archivo CSV.")
