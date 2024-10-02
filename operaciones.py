@@ -132,11 +132,7 @@ class Operaciones:
         for sala in self.lista_salas:
             if sala.value.id == sala_id:
                 sala.value.liberar()
-                #sala.value.reservar()
-                #tarifa = sala.value.tarifa_por_hora * horas
-                #if horas > 8:
-                #    tarifa *= 0.85  # Aplicar 15% de descuento
-                #self.ingresos_totales -= tarifa
+
                 print(f"Reserva de la sala {sala_id} cancelada.")
                 return
         print(f"Sala {sala_id} no encontrada.")
@@ -261,6 +257,61 @@ class Operaciones:
         for sala in self.lista_salas:
             if sala.value.tipo_sala == tipo_sala and sala.value.estado == "Reservada":
                 print(sala.value)
+    """
+    guia rapida para implementacion del codigo
+    def reservar_varias_salas(self, tipo_sala = "Grande", horas=1, cantidad = 1):
+        for sala in self.lista_salas:
+            if sala.value.tipo_sala == tipo_sala:
+                sala.value.reservar()
+                tarifa = sala.value.tarifa_por_hora * horas
+                if horas > 8:
+                    tarifa *= 0.85  # Aplicar 15% de descuento
+                self.ingresos_totales += tarifa
+                print(f"Sala {sala.value.id} reservada por {horas} horas. Tarifa: {tarifa}")
+
+                if cantidad == 2:
+                    tarifa *= 0.90
+                    self.ingresos_totales += tarifa
+                    print(f"Nuevo valor de reserva al reservar 2 salas: {tarifa}")
+                elif cantidad == 3:
+                    tarifa *= 0.85
+                    self.ingresos_totales += tarifa
+                    print(f"Nuevo valor de reserva al reservar 3 salas: {tarifa}")
+                elif cantidad > 3:
+                    tarifa *= 0.80
+                    self.ingresos_totales += tarifa
+                    print(f"Nuevo valor de reserva al reservar más de 3 salas: {tarifa}")
+                return
+
+        print("No hay suficientes salas de tipo 'Grande' para reservar")
+    """
+    def reservar_varias_salas(self, horas=1, cantidad=1):
+        salas_reservadas = 0
+        tipo_sala = "Grande"
+
+        for sala in self.lista_salas:
+            if sala.value.tipo_sala == tipo_sala and sala.value.estado == "Disponible":
+                sala.value.reservar()
+                tarifa = sala.value.tarifa_por_hora * horas
+                if horas > 8:
+                    tarifa *= 0.85
+
+                if cantidad == 2:
+                    tarifa *= 0.90
+                elif cantidad == 3:
+                    tarifa *= 0.85
+                elif cantidad > 3:
+                    tarifa *= 0.80
+
+                self.ingresos_totales += tarifa
+                salas_reservadas += 1
+                print(f"Sala {sala.value.id} reservada por {horas} horas. Tarifa: {tarifa}")
+
+                if salas_reservadas == cantidad:
+                    return
+
+        if salas_reservadas < cantidad:
+            print(f"No hay suficientes salas de tipo '{tipo_sala}' disponibles para reservar {cantidad} salas.")
 
     # DE chat GPT
     def cargar_salas_desde_csv(self, archivo_csv):

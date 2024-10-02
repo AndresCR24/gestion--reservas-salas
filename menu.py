@@ -22,6 +22,7 @@ class Menu:
         print("13. Listar todas las salas")
         print("14. Poner sala en mantenimiento")
         print("15. Cargar salas desde archivo CSV")
+        print("16. Reservar varias salas Grandes")
         print("0. Salir")
 
     def ejecutar(self):
@@ -77,8 +78,15 @@ class Menu:
                 archivo_csv = input("Ingrese el nombre del archivo CSV: ")
                 self.operaciones.cargar_salas_desde_csv(archivo_csv)
 
+            elif opcion == "16":
+                cantidad = int(input("Ingrese la cantidad de salas Grandes a reservar: "))
+                horas = int(input("Ingrese la cantidad de horas: "))
+                self.operaciones.reservar_varias_salas(horas, cantidad)
             elif opcion == "0":
                 print("Saliendo...")
                 sys.exit()
+
             else:
                 print("Opción no válida. Intente de nuevo.")
+
+
