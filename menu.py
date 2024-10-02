@@ -73,8 +73,7 @@ class Menu:
             elif opcion == "14":
                 sala_id = int(input("Ingrese el ID de la sala a poner en mantenimiento: "))
                 self.operaciones.mantenimiento(sala_id)
-
-            elif opcion == "15":  # Suponiendo que esta es una nueva opción
+            elif opcion == "15":
                 archivo_csv = input("Ingrese el nombre del archivo CSV: ")
                 self.operaciones.cargar_salas_desde_csv(archivo_csv)
 
